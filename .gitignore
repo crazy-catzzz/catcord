@@ -10,8 +10,4 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
-=======
 token.txt
-
-target
->>>>>>> 0e125b2 (Initial Commit)
