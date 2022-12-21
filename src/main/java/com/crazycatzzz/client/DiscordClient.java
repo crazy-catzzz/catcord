@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 
 import org.json.JSONObject;
@@ -169,11 +170,39 @@ public class DiscordClient {
                 .headers("Authorization", token, "Content-Type", "application/json")
                 .build();
             res = client.send(req, BodyHandlers.ofString());
+            System.out.println(res.body());
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    // Send typing start
+    public void sendStartTyping(String channelId) {
+        String body = new JSONObject()
+                    .toString();
+
+
+        BodyPublisher bp = BodyPublishers.ofString(body);
+
+        HttpRequest req;
+        HttpResponse res;
+
+        try {
+            URL reqUrl = new URL("https", "discordapp.com", "/api/v6/channels/" + channelId + "/typing");
+            req = HttpRequest.newBuilder()
+                .uri(reqUrl.toURI())
+                .POST(bp)
+                .headers("Authorization", token)
+                .build();
+            res = client.send(req, BodyHandlers.ofString());
             System.out.println(res.statusCode());
         } catch (Exception e) {
             System.out.println(e);
         }
     }
 
-
+    // Change presence
+    // accepted presence values are: "idle", "online", "dnd" or "invisible"
+    // WIP will be implemented along with DiscordWebSocket
+    //public void changePresence(String presence) {}
 }
