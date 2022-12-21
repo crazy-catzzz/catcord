@@ -15,6 +15,7 @@ public final class App {
         // SEND MSG/SHOW LAST MSGS
         String channel = "CHANNEL ID GOES HERE";
         String content = "Hello World!";
+        //client.getServers();
         //printChannelMsgs(channel, client);    // Uncomment if you want to print the last 10 msgs or so
         //client.sendMessage(channel, content, false, "123");
         //client.sendStartTyping(channel);

@@ -6,9 +6,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 // Custom Discord client
@@ -19,6 +19,7 @@ public class DiscordClient {
     private URL meUrl;
     //private String settingsUrl = "https://discordapp.com/api/v6/users/@me/settings";
     //private String guildsUrl = "https://discordapp.com/api/v6/users/@me/guilds";
+    private URL guildsUrl;
     private URL gatewayUrl;
     //private String logoutUrl = "https://discordapp.com/api/v6/auth/logout";
     //private String trackUrl = "https://discordapp.com/api/v6/track";
@@ -41,6 +42,7 @@ public class DiscordClient {
 
             //loginUrl = new URL("https", "discordapp.com", "/api/v6/auth/login");
             meUrl = new URL("https", "discordapp.com", "/api/v6/users/@me");
+            guildsUrl = new URL("https", "discordapp.com", "/api/v6/users/@me/guilds");
             gatewayUrl = new URL("https", "discordapp.com", "/api/v6/gateway");
         } catch (Exception e) {
             System.out.println(e);
@@ -49,11 +51,11 @@ public class DiscordClient {
 
     /*
      * The method login(email, password) does not pass the captcha
-     * 
+     *
     @Deprecated
     public void login(String email, String password) {
         HttpRequest loginReq;
-        
+
         // JSON Body
         BodyPublisher bp = BodyPublishers.ofString(
             new String(
@@ -120,7 +122,7 @@ public class DiscordClient {
                 .headers("Authorization", token)
                 .build();
             res = client.send(req, BodyHandlers.ofString());
-            msgStrings = "{\"messages\": " + res.body().toString() + "}";
+            msgStrings = "{\"messages\": " + res.body() + "}";
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -141,7 +143,7 @@ public class DiscordClient {
                 .headers("Authorization", token)
                 .build();
             res = client.send(req, BodyHandlers.ofString());
-            JSONObject resBody = new JSONObject(res.body().toString());
+            JSONObject resBody = new JSONObject(res.body());
             return resBody.getString("url");
         } catch (Exception e) {
             System.out.println(e);
@@ -161,7 +163,7 @@ public class DiscordClient {
 
         HttpRequest req;
         HttpResponse<String> res;
-        
+
         try {
             URL reqUrl = new URL("https", "discordapp.com", "/api/v6/channels/" + channelId + "/messages");
             req = HttpRequest.newBuilder()
@@ -176,7 +178,7 @@ public class DiscordClient {
         }
     }
 
-    // Send typing start
+    // Send typing start to a channel
     public void sendStartTyping(String channelId) {
         String body = new JSONObject()
                     .toString();
@@ -205,4 +207,27 @@ public class DiscordClient {
     // accepted presence values are: "idle", "online", "dnd" or "invisible"
     // WIP will be implemented along with DiscordWebSocket
     //public void changePresence(String presence) {}
+
+    // Gets all servers the user is a member of
+    public JSONObject getServers() {
+        HttpRequest req;
+        HttpResponse<String> res;
+
+        JSONObject servers = null;
+
+        try {
+            req = HttpRequest.newBuilder()
+                .uri(guildsUrl.toURI())
+                .GET()
+                .headers("Authorization", token)
+                .build();
+            res = client.send(req, BodyHandlers.ofString());
+            String resBody = "{\"servers\":" + res.body() + "}";
+            servers = new JSONObject(resBody);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        return servers;
+    }
 }
