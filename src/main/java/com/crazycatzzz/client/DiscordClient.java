@@ -51,11 +51,11 @@ public class DiscordClient {
 
     /*
      * The method login(email, password) does not pass the captcha
-     * 
+     *
     @Deprecated
     public void login(String email, String password) {
         HttpRequest loginReq;
-        
+
         // JSON Body
         BodyPublisher bp = BodyPublishers.ofString(
             new String(
@@ -122,7 +122,7 @@ public class DiscordClient {
                 .headers("Authorization", token)
                 .build();
             res = client.send(req, BodyHandlers.ofString());
-            msgStrings = "{\"messages\": " + res.body().toString() + "}";
+            msgStrings = "{\"messages\": " + res.body() + "}";
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -143,7 +143,7 @@ public class DiscordClient {
                 .headers("Authorization", token)
                 .build();
             res = client.send(req, BodyHandlers.ofString());
-            JSONObject resBody = new JSONObject(res.body().toString());
+            JSONObject resBody = new JSONObject(res.body());
             return resBody.getString("url");
         } catch (Exception e) {
             System.out.println(e);
@@ -163,7 +163,7 @@ public class DiscordClient {
 
         HttpRequest req;
         HttpResponse<String> res;
-        
+
         try {
             URL reqUrl = new URL("https", "discordapp.com", "/api/v6/channels/" + channelId + "/messages");
             req = HttpRequest.newBuilder()
@@ -209,9 +209,11 @@ public class DiscordClient {
     //public void changePresence(String presence) {}
 
     // Gets all servers the user is a member of
-    public void getServers() {
+    public JSONObject getServers() {
         HttpRequest req;
         HttpResponse<String> res;
+
+        JSONObject servers = null;
 
         try {
             req = HttpRequest.newBuilder()
@@ -220,8 +222,12 @@ public class DiscordClient {
                 .headers("Authorization", token)
                 .build();
             res = client.send(req, BodyHandlers.ofString());
+            String resBody = "{\"servers\":" + res.body() + "}";
+            servers = new JSONObject(resBody);
         } catch (Exception e) {
             System.out.println(e);
         }
+
+        return servers;
     }
 }
