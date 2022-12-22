@@ -22,7 +22,6 @@ public class DiscordClient {
     private URL gatewayUrl;
     //private String logoutUrl = "https://discordapp.com/api/v6/auth/logout";
     //private String trackUrl = "https://discordapp.com/api/v6/track";
-    //private String membersUrl = "https://discordapp.com/api/v6/guilds/{}/members";
 
     private String token; // user token
 
@@ -217,4 +216,9 @@ public class DiscordClient {
 
         return servers;
     }
+
+    // Gets all members in a server
+    // Discord doesn't allow non-bot users access to the members endpoint, also the max amount of requests that can be made is 1000
+    // WIP, will be implemented once DiscordWebSocket is done.
+    //public void getServerMembers(String serverId, int limit) {}
 }
