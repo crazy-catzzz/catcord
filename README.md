@@ -9,3 +9,9 @@ It's in a very early state, there is no GUI, the wrapper around the Discord API 
 
 ## Credits
 - [ripcord-api](https://github.com/saucecode/ripcord-api) by saucecode, it gave me a general idea of how the Discord API works as well as an example implementation.
+
+## TODO
+- Finish DiscordWebSocket implementation,
+- Presence change,
+- Implement a way to receive messages in real-time,
+- Major refactoring once the wrapper around the Discord API is finished.
