@@ -15,7 +15,6 @@ import org.json.JSONObject;
 public class DiscordClient {
     private DiscordWebSocket ws; // WIP WebSocket for receiving messages etc...
 
-    //private URL loginUrl;
     private URL meUrl;
     //private String settingsUrl = "https://discordapp.com/api/v6/users/@me/settings";
     //private String guildsUrl = "https://discordapp.com/api/v6/users/@me/guilds";
@@ -40,7 +39,6 @@ public class DiscordClient {
         try {
             client = HttpClient.newHttpClient();
 
-            //loginUrl = new URL("https", "discordapp.com", "/api/v6/auth/login");
             meUrl = new URL("https", "discordapp.com", "/api/v6/users/@me");
             guildsUrl = new URL("https", "discordapp.com", "/api/v6/users/@me/guilds");
             gatewayUrl = new URL("https", "discordapp.com", "/api/v6/gateway");
@@ -48,41 +46,6 @@ public class DiscordClient {
             System.out.println(e);
         }
     }
-
-    /*
-     * The method login(email, password) does not pass the captcha
-     *
-    @Deprecated
-    public void login(String email, String password) {
-        HttpRequest loginReq;
-
-        // JSON Body
-        BodyPublisher bp = BodyPublishers.ofString(
-            new String(
-                "{" +
-                    "\"email\":\"" + email + "\"," +
-                    "\"password\":\"" + password + "\"" +
-                "}"
-            )
-        );
-
-        HttpResponse<String> res;
-
-        try {
-            loginReq = HttpRequest.newBuilder()
-                .uri(loginUrl.toURI())
-                .POST(bp)
-                .headers("Content-Type", "application/json")
-                .build();
-            res = client.send(loginReq, BodyHandlers.ofString());
-            System.out.println(res.body());
-        } catch (Exception e) {
-            System.out.println(loginUrl);
-            System.out.println("error in login");
-            System.out.println(e);
-        }
-    }
-    */
 
     // Uses the user token to get user info
     public void getMe() {
