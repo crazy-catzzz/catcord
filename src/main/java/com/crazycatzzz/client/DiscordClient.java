@@ -193,4 +193,28 @@ public class DiscordClient {
 
         return servers;
     }
+
+    // Gets all the channels in a server
+    public JSONObject getServerChannels(String serverId) {
+        HttpRequest req;
+        HttpResponse<String> res;
+
+        JSONObject servers = null;
+
+        try {
+            URL channelsUrl = new URL("https", "discordapp.com", "/api/v6/guilds/" + serverId + "/channels");
+            req = HttpRequest.newBuilder()
+                .uri(channelsUrl.toURI())
+                .GET()
+                .headers("Authorization", token)
+                .build();
+            res = client.send(req, BodyHandlers.ofString());
+            String resBody = "{\"servers\":" + res.body() + "}";
+            servers = new JSONObject(resBody);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        return servers;
+    }
 }
