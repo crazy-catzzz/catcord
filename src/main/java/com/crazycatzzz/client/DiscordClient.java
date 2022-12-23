@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 // Custom Discord client
 public class DiscordClient {
-    private WebSocket ws; // WIP WebSocket for receiving messages etc...
+    private DiscordWebSocketClient gateway; // WIP WebSocket for receiving messages etc...
 
     private URL meUrl;
     //private String settingsUrl = "https://discordapp.com/api/v6/users/@me/settings";
@@ -36,6 +36,8 @@ public class DiscordClient {
     // HTTP Client for requests
     HttpClient client;
 
+    JSONObject packet = null;
+
     public DiscordClient(String token) {
         this.token = token;
 
@@ -45,22 +47,8 @@ public class DiscordClient {
             meUrl = new URL("https", "discordapp.com", "/api/v6/users/@me");
             guildsUrl = new URL("https", "discordapp.com", "/api/v6/users/@me/guilds");
             gatewayUrl = new URL("https", "discordapp.com", "/api/v6/gateway");
-            Listener listener = new Listener() {
-                @Override
-                public void onOpen(WebSocket socket) {
-                    System.out.println("Discord WebSocket connected!");
-                    socket.request(1);
-                }
 
-                @Override
-                public CompletionStage<?> onText(WebSocket socket, CharSequence data, boolean last) {
-                    System.out.print(data);
-
-                    socket.request(1);
-                    return null;
-                }
-            };
-            ws = client.newWebSocketBuilder().buildAsync(new URI(getWebSocketGateway() + webSocketGatewayQueryParams), listener).join();
+            gateway = new DiscordWebSocketClient(this);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -114,7 +102,7 @@ public class DiscordClient {
     }
 
     // WIP will be used when I implement DiscordWebSocket
-    private String getWebSocketGateway() {
+    protected String getWebSocketGateway() {
         HttpRequest req;
         HttpResponse<String> res;
 
