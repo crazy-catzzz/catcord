@@ -36,6 +36,7 @@ public class DiscordClient {
     private JSONObject current;
     private int heartbeatInterval;
     private int lastSequenceNumber;
+    private URL resumeUrl;
 
     // HTTP Client for requests
     HttpClient client;
@@ -91,8 +92,18 @@ public class DiscordClient {
                                                 .put("d", lastSequenceNumber);
                             socket.sendText(toSend.toString(), true);
                             break;
+                        case 0:
+                            //System.out.println("Ready!");
+                            System.out.println(current.getString("t"));
+                            /*try {
+                                resumeUrl = new URL(current.getJSONObject("d").getString("resume_gateway_url"));
+                            } catch (Exception e) {
+                                System.out.println(e);
+                            }*/
+                            break;
                     }
 
+                    //System.out.println(current.getInt("op"));
                     socket.request(1);
                     return null;
                 }
@@ -117,6 +128,26 @@ public class DiscordClient {
 
             ws.sendText(heartbeat.toString(), true);
         }
+    }
+    public void sendIdentification() {
+        if (ws.isInputClosed() || ws.isOutputClosed()) return;
+
+        System.out.println("Sending identification...");
+
+        JSONObject identification = new JSONObject()
+                                    .put("op", 2)
+                                    .put("d", new JSONObject()
+                                                      .put("token", token)
+                                                      .put("properties", new JSONObject()
+                                                                                 .put("os", "linux")
+                                                                                 .put("browser", "Firefox")
+                                                                                 .put("device", "catcord")
+                                                      )
+                                                      .put("large_threshhold", 100)
+                                                      .put("compress", true)
+                                    );
+
+        ws.sendText(identification.toString(), true);
     }
 
     // Uses the user token to get user info

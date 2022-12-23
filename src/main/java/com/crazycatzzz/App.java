@@ -21,6 +21,12 @@ public final class App {
         //client.sendMessage(channel, content, false, "123");
         //client.sendStartTyping(channel);
         //client.getServerChannels(server);
+        try {
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        client.sendIdentification();
         client.heartbeatLoop();
     }
 
