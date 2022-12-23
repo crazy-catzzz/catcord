@@ -33,6 +33,10 @@ public class DiscordClient {
 
     private JSONObject me; // user info
 
+    private JSONObject current;
+    private int heartbeatInterval;
+    private int lastSequenceNumber;
+
     // HTTP Client for requests
     HttpClient client;
 
@@ -45,6 +49,7 @@ public class DiscordClient {
             meUrl = new URL("https", "discordapp.com", "/api/v6/users/@me");
             guildsUrl = new URL("https", "discordapp.com", "/api/v6/users/@me/guilds");
             gatewayUrl = new URL("https", "discordapp.com", "/api/v6/gateway");
+
             Listener listener = new Listener() {
                 @Override
                 public void onOpen(WebSocket socket) {
@@ -54,7 +59,39 @@ public class DiscordClient {
 
                 @Override
                 public CompletionStage<?> onText(WebSocket socket, CharSequence data, boolean last) {
-                    System.out.print(data);
+                    //System.out.print(data);
+
+                    current = new JSONObject(data.toString());
+
+                    switch (current.getInt("op")) {
+                        case 11:
+                            System.out.println("Gateway acknowledged heartbeat!");
+                            break;
+                        case 10:
+                            System.out.println("Hello received!");
+                            heartbeatInterval = current.getJSONObject("d").getInt("heartbeat_interval");
+
+                            JSONObject firstHeartbeat = new JSONObject()
+                                                        .put("op", 1)
+                                                        .put("d", lastSequenceNumber);
+
+                            /*try {
+                                Thread.sleep(Math.round(heartbeatInterval * Math.random()));
+                            } catch (Exception e) {
+                                System.out.println(e);
+                            }*/
+                            System.out.println("Sending first heartbeat");
+                            socket.sendText(firstHeartbeat.toString(), true);
+
+                            break;
+                        case 1:
+                            System.out.println("Heartbeat received");
+                            JSONObject toSend = new JSONObject()
+                                                .put("op", 1)
+                                                .put("d", lastSequenceNumber);
+                            socket.sendText(toSend.toString(), true);
+                            break;
+                    }
 
                     socket.request(1);
                     return null;
@@ -63,6 +100,22 @@ public class DiscordClient {
             ws = client.newWebSocketBuilder().buildAsync(new URI(getWebSocketGateway() + webSocketGatewayQueryParams), listener).join();
         } catch (Exception e) {
             System.out.println(e);
+        }
+    }
+
+    public void heartbeatLoop() {
+        while (!ws.isInputClosed() && !ws.isOutputClosed()) {
+            try {
+                Thread.sleep(heartbeatInterval);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.println("Sending heartbeat...");
+            JSONObject heartbeat = new JSONObject()
+                                   .put("op", 1)
+                                   .put("d", lastSequenceNumber);
+
+            ws.sendText(heartbeat.toString(), true);
         }
     }
 

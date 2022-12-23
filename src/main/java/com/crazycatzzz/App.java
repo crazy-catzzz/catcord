@@ -10,7 +10,7 @@ public final class App {
         String token = "YOUR TOKEN GOES HERE";  // NOTE: This is a user token, NOT a bot token!
         DiscordClient client = new DiscordClient(token);
 
-        client.getMe(); // GET USER INFO
+        //client.getMe(); // GET USER INFO
 
         // SEND MSG/SHOW LAST MSGS
         String channel = "CHANNEL ID GOES HERE";
@@ -21,6 +21,7 @@ public final class App {
         //client.sendMessage(channel, content, false, "123");
         //client.sendStartTyping(channel);
         //client.getServerChannels(server);
+        client.heartbeatLoop();
     }
 
     // Prints the last 10 msgs sent in a channel
