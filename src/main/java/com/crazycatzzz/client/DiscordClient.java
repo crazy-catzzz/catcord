@@ -1,19 +1,23 @@
 package com.crazycatzzz.client;
 
 import java.net.URL;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.WebSocket;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.net.http.WebSocket.Listener;
+import java.util.concurrent.CompletionStage;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 // Custom Discord client
 public class DiscordClient {
-    private DiscordWebSocket ws; // WIP WebSocket for receiving messages etc...
+    private WebSocket ws; // WIP WebSocket for receiving messages etc...
 
     private URL meUrl;
     //private String settingsUrl = "https://discordapp.com/api/v6/users/@me/settings";
@@ -29,6 +33,11 @@ public class DiscordClient {
 
     private JSONObject me; // user info
 
+    private JSONObject current;
+    private int heartbeatInterval;
+    private int lastSequenceNumber;
+    private URL resumeUrl;
+
     // HTTP Client for requests
     HttpClient client;
 
@@ -41,9 +50,104 @@ public class DiscordClient {
             meUrl = new URL("https", "discordapp.com", "/api/v6/users/@me");
             guildsUrl = new URL("https", "discordapp.com", "/api/v6/users/@me/guilds");
             gatewayUrl = new URL("https", "discordapp.com", "/api/v6/gateway");
+
+            Listener listener = new Listener() {
+                @Override
+                public void onOpen(WebSocket socket) {
+                    System.out.println("Discord WebSocket connected!");
+                    socket.request(1);
+                }
+
+                @Override
+                public CompletionStage<?> onText(WebSocket socket, CharSequence data, boolean last) {
+                    //System.out.print(data);
+
+                    current = new JSONObject(data.toString());
+
+                    switch (current.getInt("op")) {
+                        case 11:
+                            System.out.println("Gateway acknowledged heartbeat!");
+                            break;
+                        case 10:
+                            System.out.println("Hello received!");
+                            heartbeatInterval = current.getJSONObject("d").getInt("heartbeat_interval");
+
+                            JSONObject firstHeartbeat = new JSONObject()
+                                                        .put("op", 1)
+                                                        .put("d", lastSequenceNumber);
+
+                            /*try {
+                                Thread.sleep(Math.round(heartbeatInterval * Math.random()));
+                            } catch (Exception e) {
+                                System.out.println(e);
+                            }*/
+                            System.out.println("Sending first heartbeat");
+                            socket.sendText(firstHeartbeat.toString(), true);
+
+                            break;
+                        case 1:
+                            System.out.println("Heartbeat received");
+                            JSONObject toSend = new JSONObject()
+                                                .put("op", 1)
+                                                .put("d", lastSequenceNumber);
+                            socket.sendText(toSend.toString(), true);
+                            break;
+                        case 0:
+                            //System.out.println("Ready!");
+                            System.out.println(current.getString("t"));
+                            /*try {
+                                resumeUrl = new URL(current.getJSONObject("d").getString("resume_gateway_url"));
+                            } catch (Exception e) {
+                                System.out.println(e);
+                            }*/
+                            break;
+                    }
+
+                    //System.out.println(current.getInt("op"));
+                    socket.request(1);
+                    return null;
+                }
+            };
+            ws = client.newWebSocketBuilder().buildAsync(new URI(getWebSocketGateway() + webSocketGatewayQueryParams), listener).join();
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    public void heartbeatLoop() {
+        while (!ws.isInputClosed() && !ws.isOutputClosed()) {
+            try {
+                Thread.sleep(heartbeatInterval);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.println("Sending heartbeat...");
+            JSONObject heartbeat = new JSONObject()
+                                   .put("op", 1)
+                                   .put("d", lastSequenceNumber);
+
+            ws.sendText(heartbeat.toString(), true);
+        }
+    }
+    public void sendIdentification() {
+        if (ws.isInputClosed() || ws.isOutputClosed()) return;
+
+        System.out.println("Sending identification...");
+
+        JSONObject identification = new JSONObject()
+                                    .put("op", 2)
+                                    .put("d", new JSONObject()
+                                                      .put("token", token)
+                                                      .put("properties", new JSONObject()
+                                                                                 .put("os", "linux")
+                                                                                 .put("browser", "Firefox")
+                                                                                 .put("device", "catcord")
+                                                      )
+                                                      .put("large_threshhold", 100)
+                                                      .put("compress", true)
+                                    );
+
+        ws.sendText(identification.toString(), true);
     }
 
     // Uses the user token to get user info

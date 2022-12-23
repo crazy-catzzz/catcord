@@ -5,5 +5,5 @@ package com.crazycatzzz.client;
 */
 
 public class DiscordWebSocket {
-    
+
 }
