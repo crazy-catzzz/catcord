@@ -37,6 +37,7 @@ public class DiscordClient {
     private int heartbeatInterval;
     private int lastSequenceNumber;
     private URL resumeUrl;
+    private String listenChannel;
 
     // HTTP Client for requests
     HttpClient client;
@@ -94,7 +95,15 @@ public class DiscordClient {
                             break;
                         case 0:
                             //System.out.println("Ready!");
-                            System.out.println(current.getString("t"));
+                            String eventType = current.getString("t");
+                            if (eventType.equals("MESSAGE_CREATE")) {
+                                if (current.getJSONObject("d").getString("channel_id").equals(listenChannel)) {
+                                    String author = current.getJSONObject("d").getJSONObject("author").getString("username");
+                                    String content = current.getJSONObject("d").getString("content");
+                                    System.out.println(author + ": " + content);
+                                }
+                            }
+
                             /*try {
                                 resumeUrl = new URL(current.getJSONObject("d").getString("resume_gateway_url"));
                             } catch (Exception e) {
@@ -148,6 +157,9 @@ public class DiscordClient {
                                     );
 
         ws.sendText(identification.toString(), true);
+    }
+    public void listenTo(String channel) {
+        listenChannel = channel;
     }
 
     // Uses the user token to get user info
