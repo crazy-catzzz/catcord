@@ -20,8 +20,7 @@ public class DiscordClient {
     private WebSocket ws; // WIP WebSocket for receiving messages etc...
 
     private URL meUrl;
-    //private String settingsUrl = "https://discordapp.com/api/v6/users/@me/settings";
-    //private String guildsUrl = "https://discordapp.com/api/v6/users/@me/guilds";
+    private URL settingsUrl;
     private URL guildsUrl;
     private URL gatewayUrl;
     //private String logoutUrl = "https://discordapp.com/api/v6/auth/logout";
@@ -49,6 +48,7 @@ public class DiscordClient {
             client = HttpClient.newHttpClient();
 
             meUrl = new URL("https", "discordapp.com", "/api/v6/users/@me");
+            settingsUrl = new URL("https", "discordapp.com", "/api/v6/users/@me/settings");
             guildsUrl = new URL("https", "discordapp.com", "/api/v6/users/@me/guilds");
             gatewayUrl = new URL("https", "discordapp.com", "/api/v6/gateway");
 
@@ -283,8 +283,38 @@ public class DiscordClient {
 
     // Change presence
     // accepted presence values are: "idle", "online", "dnd" or "invisible"
-    // WIP will be implemented along with DiscordWebSocket
-    //public void changePresence(String presence) {}
+    public void changePresence(String presence) {
+        String wsSend = new JSONObject()
+                    .put("op", 3)
+                    .put("d", new JSONObject()
+                                  .put("status", presence)
+                                  .put("since", 0)
+                                  .put("game", "")
+                                  .put("afk", false)
+                                  )
+                    .toString();
+        
+        ws.sendText(wsSend, true);
+
+        String body = new JSONObject()
+                      .put("status", presence)
+                      .toString();
+        
+        HttpRequest req;
+        HttpResponse<String> res;
+
+        try {
+            req = HttpRequest.newBuilder()
+                .uri(settingsUrl.toURI())
+                .method("PATCH", BodyPublishers.ofString(body))
+                .headers("Authorization", token, "Content-Type", "application/json")
+                .build();
+            res = client.send(req, BodyHandlers.ofString());
+            //System.out.println(res.statusCode());
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
 
     // Gets all servers the user is a member of
     public JSONObject getServers() {

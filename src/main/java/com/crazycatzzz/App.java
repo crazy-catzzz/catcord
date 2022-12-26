@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 public final class App {
     public static void main(String[] args) {
-        String token = "YOUR TOKEN GEAS HERE";  // NOTE: This is a user token, NOT a bot token!
+        String token = "YOUR TOKEN GOES HERE";  // NOTE: This is a user token, NOT a bot token!
         DiscordClient client = new DiscordClient(token);
 
         //client.getMe(); // GET USER INFO
@@ -16,6 +16,7 @@ public final class App {
         String channel = "CAHNNEL ID GOES HERE";
         String server = "SERVER ID GOES HERE";
         String content = "Hello World!";
+        String newPresence = "dnd";
         //client.getServers();
         //printChannelMsgs(channel, client);    // Uncomment if you want to print the last 10 msgs or so
         //client.sendMessage(channel, content, false, "123");
@@ -26,8 +27,9 @@ public final class App {
         } catch (Exception e) {
             System.out.println(e);
         }
-        client.listenTo(channel);
+        //client.listenTo(channel);
         client.sendIdentification();
+        //client.changePresence(newPresence);
         client.heartbeatLoop();
     }
 
