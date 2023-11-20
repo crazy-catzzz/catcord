@@ -1,4 +1,7 @@
 # catcord
+
+[![CodeFactor](https://www.codefactor.io/repository/github/crazy-catzzz/catcord/badge)](https://www.codefactor.io/repository/github/crazy-catzzz/catcord)
+
 WIP custom Discord Client written in Java.
 
 ## Why?
